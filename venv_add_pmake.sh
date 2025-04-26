@@ -39,4 +39,7 @@ do
     echo "${tmp}" > ${site_dir}/pmake.pth
 done
 
+source ${VENV_DIR}/bin/activate
+
+
 

@@ -6,9 +6,6 @@ from pmake.logger import fatal
 __ALL__ = ['unit_test_logger_main']
 
 class unit_test_logger( unittest.TestCase ):
-	def __init__(self):
-		print("init for my unit test")
-		unittest.TestCase.__init__()
 	def test_upper(self):
 		print("test upper1")
 		self.assertEqual('foo'.upper(),'FOO')
