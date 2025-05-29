@@ -378,6 +378,7 @@ class SimpleTextParser(  LogHelper ):
         We have an #include statement.
         '''
         filename = m['expression']
+        filename = filename.strip()
         filename = self._dequote_include_filename( filename )
         # Get CWD of current file
         pathlist = []
@@ -463,7 +464,20 @@ class SimpleTextParser(  LogHelper ):
             state = ife.state
 
         while True:
+            if len(self._include_stack) == 0:
+                # THERE IS NO MORE TO READ
+                return WhereStr( '', where=self._where )
             text = self.raw_next_line()
+            if len(text) == 0:
+                # END OF FILE
+                if len( self._include_stack ) > 1:
+                    text = WhereStr( SimpleTextParser.INCLUDE_BARRIER, where=self._where )
+                    self.pop_include_file()
+                    return text
+                # END of file for the primary top(outer) most file
+                ise = self._include_stack.pop()
+                ise.pop()
+                return WhereStr( '', where=self._where )
             # Make it a string, regex does not like WhereStr()
             # does it contain a keyword?
             m = re_keyword.match(str(text))
@@ -478,7 +492,8 @@ class SimpleTextParser(  LogHelper ):
                 # Enabled so just return the string.
                 if m is not None:
                     # there is a keyword, and it is an #include here.
-                    self._handle_keyword(m)
+                    text = self._handle_keyword(m)
+                # otherwise it is not a keyword inlcude just return the string
                 return text
             # Disabled, so return the magic string as a WhereStr
             return WhereStr( SimpleTextParser.IF_DISABLED, where=self._where )
